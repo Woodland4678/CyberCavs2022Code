@@ -14,7 +14,7 @@
 
 #include "commands/Climb.h"
 #include <frc/smartdashboard/SmartDashboard.h>
-
+#include <frc/Timer.h>
 Climb::Climb(Climber* m_climber)
 :m_climber(m_climber){
 
@@ -28,34 +28,38 @@ Climb::Climb(Climber* m_climber)
 }
 
 bool done = false;
+auto m_originalTime = 0_s;
 // Called just before this Command runs the first time
 void Climb::Initialize() {
-
+    m_originalTime = frc::Timer::GetFPGATimestamp();
 }
 
 int count = 0;
 bool doneCalibrate = false;
 // Called repeatedly when this Command is scheduled to run
 void Climb::Execute() {
-    // m_climber->SetClimberPower(0.15);
-    if (!doneCalibrate){
-        doneCalibrate = m_climber->CalibrateClimber();
-    }
-    
-    else if (doneCalibrate){
-        count++;
-    }
-    frc::SmartDashboard::PutNumber("Climb command count", count);
-    if (count>=50){
-        m_climber->SetClimberPosition(94.4);
-        if (count >= 75) {
-            done = true;
-            count = 0;
-            doneCalibrate = false;
+    //if (frc::Timer::GetFPGATimestamp() - m_originalTime > 3_s) {
+        // m_climber->SetClimberPower(0.15);
+        if (!doneCalibrate){
+            doneCalibrate = m_climber->CalibrateClimber();
         }
-    }else{
-        done = false;
-    }
+        
+        else if (doneCalibrate){
+            count++;
+        }
+        frc::SmartDashboard::PutNumber("Climb command count", count);
+        if (count>=50){
+            m_climber->Climb();
+            /*m_climber->SetClimberPosition(94.4);
+            if (count >= 75) {
+                done = true;
+                count = 0;
+                doneCalibrate = false;
+            }*/
+        }else{
+            done = false;
+        }
+    //}
 
 }
 
